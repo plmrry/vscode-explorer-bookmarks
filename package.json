@@ -1,0 +1,59 @@
+{
+  "name": "vscode-explorer-bookmarks",
+  "displayName": "Explorer Bookmarks",
+  "description": "Add bookmarks to the Explorer panel",
+  "version": "0.0.1",
+  "publisher": "Paul Murray",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "explorerBookmarks",
+          "name": "Bookmarks"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "explorerBookmarks.refresh",
+        "title": "Refresh Bookmarks",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "explorerBookmarks.refresh",
+          "when": "view == explorerBookmarks",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  }
+}
+
+
+
