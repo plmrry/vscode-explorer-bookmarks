@@ -1,10 +1,35 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 
 export class BookmarksProvider implements vscode.TreeDataProvider<BookmarkItem> {
 	private _onDidChangeTreeData: vscode.EventEmitter<BookmarkItem | undefined | null | void> = new vscode.EventEmitter<BookmarkItem | undefined | null | void>();
 	readonly onDidChangeTreeData: vscode.Event<BookmarkItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
-	constructor() {}
+	private bookmarks: string[] = [];
+	private context: vscode.ExtensionContext;
+	private bookmarksFilePath: string | null = null;
+
+	constructor(context: vscode.ExtensionContext) {
+		this.context = context;
+		this.initializeBookmarksFile();
+		this.loadBookmarks();
+	}
+
+	private initializeBookmarksFile(): void {
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+		if (workspaceFolders && workspaceFolders.length > 0) {
+			const workspaceRoot = workspaceFolders[0].uri.fsPath;
+			const vscodeDir = path.join(workspaceRoot, '.vscode');
+			
+			// Create .vscode directory if it doesn't exist
+			if (!fs.existsSync(vscodeDir)) {
+				fs.mkdirSync(vscodeDir, { recursive: true });
+			}
+			
+			this.bookmarksFilePath = path.join(vscodeDir, '.bookmarks.json');
+		}
+	}
 
 	refresh(): void {
 		this._onDidChangeTreeData.fire();
@@ -25,23 +50,95 @@ export class BookmarksProvider implements vscode.TreeDataProvider<BookmarkItem> 
 	}
 
 	private getBookmarks(): BookmarkItem[] {
-		// Placeholder: return some example bookmarks
-		return [
-			new BookmarkItem('Example Bookmark 1', vscode.TreeItemCollapsibleState.None),
-			new BookmarkItem('Example Bookmark 2', vscode.TreeItemCollapsibleState.None),
-			new BookmarkItem('Example Bookmark 3', vscode.TreeItemCollapsibleState.None)
-		];
+		return this.bookmarks.map(bookmarkPath => {
+			const uri = vscode.Uri.file(bookmarkPath);
+			return new BookmarkItem(uri, this.context);
+		});
+	}
+
+	async addBookmark(uri: vscode.Uri): Promise<void> {
+		const filePath = uri.fsPath;
+		if (!this.bookmarks.includes(filePath)) {
+			this.bookmarks.push(filePath);
+			await this.saveBookmarks();
+			this.refresh();
+		}
+	}
+
+	async removeBookmark(item: BookmarkItem): Promise<void> {
+		const filePath = item.resourceUri.fsPath;
+		this.bookmarks = this.bookmarks.filter(b => b !== filePath);
+		await this.saveBookmarks();
+		this.refresh();
+	}
+
+	private async loadBookmarks(): Promise<void> {
+		if (!this.bookmarksFilePath) {
+			this.bookmarks = [];
+			return;
+		}
+
+		try {
+			if (fs.existsSync(this.bookmarksFilePath)) {
+				const fileContent = fs.readFileSync(this.bookmarksFilePath, 'utf-8');
+				const data = JSON.parse(fileContent);
+				this.bookmarks = data.bookmarks || [];
+			} else {
+				this.bookmarks = [];
+			}
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to load bookmarks: ${error}`);
+			this.bookmarks = [];
+		}
+	}
+
+	private async saveBookmarks(): Promise<void> {
+		if (!this.bookmarksFilePath) {
+			vscode.window.showWarningMessage('No workspace folder open. Cannot save bookmarks.');
+			return;
+		}
+
+		try {
+			const data = {
+				bookmarks: this.bookmarks
+			};
+			fs.writeFileSync(this.bookmarksFilePath, JSON.stringify(data, null, 2), 'utf-8');
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to save bookmarks: ${error}`);
+		}
 	}
 }
 
 export class BookmarkItem extends vscode.TreeItem {
 	constructor(
-		public readonly label: string,
-		public readonly collapsibleState: vscode.TreeItemCollapsibleState
+		public readonly resourceUri: vscode.Uri,
+		private context: vscode.ExtensionContext
 	) {
-		super(label, collapsibleState);
-		this.tooltip = `${this.label}`;
-		this.iconPath = new vscode.ThemeIcon('bookmark');
+		const label = path.basename(resourceUri.fsPath);
+		super(label, vscode.TreeItemCollapsibleState.None);
+		
+		this.resourceUri = resourceUri;
+		this.tooltip = resourceUri.fsPath;
+		this.contextValue = 'bookmark';
+		
+		// Set command to open the file/folder when clicked
+		this.command = {
+			command: 'explorerBookmarks.openBookmark',
+			title: 'Open Bookmark',
+			arguments: [resourceUri]
+		};
+
+		// Use appropriate icon based on file/folder
+		try {
+			const stat = require('fs').statSync(resourceUri.fsPath);
+			if (stat.isDirectory()) {
+				this.iconPath = new vscode.ThemeIcon('folder');
+			} else {
+				this.iconPath = vscode.ThemeIcon.File;
+			}
+		} catch {
+			this.iconPath = new vscode.ThemeIcon('bookmark');
+		}
 	}
 }
 

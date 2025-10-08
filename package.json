@@ -25,6 +25,16 @@
         "command": "explorerBookmarks.refresh",
         "title": "Refresh Bookmarks",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "explorerBookmarks.addBookmark",
+        "title": "Add to Bookmarks",
+        "icon": "$(bookmark)"
+      },
+      {
+        "command": "explorerBookmarks.removeBookmark",
+        "title": "Remove from Bookmarks",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -33,6 +43,19 @@
           "command": "explorerBookmarks.refresh",
           "when": "view == explorerBookmarks",
           "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "explorerBookmarks.addBookmark",
+          "group": "2_workspace"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "explorerBookmarks.removeBookmark",
+          "when": "view == explorerBookmarks && viewItem == bookmark",
+          "group": "inline"
         }
       ]
     }
