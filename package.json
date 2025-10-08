@@ -3,7 +3,11 @@
   "displayName": "Explorer Bookmarks",
   "description": "Add bookmarks to the Explorer panel",
   "version": "0.0.1",
-  "publisher": "Paul Murray",
+  "publisher": "paulmurray",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/plmrry/vscode-explorer-bookmarks"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -77,6 +81,3 @@
     "typescript": "^5.3.3"
   }
 }
-
-
-
