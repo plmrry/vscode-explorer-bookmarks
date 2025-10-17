@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/plmrry/vscode-explorer-bookmarks"
   },
-  "publisher": "paulmurray",
+  "publisher": "paul-murray",
   "main": "./out/extension.js",
   "scripts": {
     "compile": "tsc -p ./",

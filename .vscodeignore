@@ -8,6 +8,8 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+bookmark-icon-original.png
+.claude/**
 
 
 
