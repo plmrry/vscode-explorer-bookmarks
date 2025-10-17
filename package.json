@@ -1,31 +1,28 @@
 {
   "name": "vscode-explorer-bookmarks",
   "displayName": "Explorer Bookmarks",
-  "description": "Add bookmarks to the Explorer panel",
   "version": "0.0.1",
-  "publisher": "paulmurray",
+  "description": "Add bookmarks to the Explorer panel",
+  "categories": [
+    "Other"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/plmrry/vscode-explorer-bookmarks"
   },
-  "icon": "bookmark-icon.png",
-  "engines": {
-    "vscode": "^1.85.0"
-  },
-  "categories": [
-    "Other"
-  ],
+  "publisher": "paulmurray",
   "main": "./out/extension.js",
+  "scripts": {
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "pretest": "npm run compile && npm run lint",
+    "test": "node ./out/test/runTest.js",
+    "vscode:prepublish": "npm run compile",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "vsce": "vsce"
+  },
   "contributes": {
-    "views": {
-      "explorer": [
-        {
-          "id": "explorerBookmarks",
-          "name": "Bookmarks",
-          "icon": "bookmark-icon.png"
-        }
-      ]
-    },
     "commands": [
       {
         "command": "explorerBookmarks.refresh",
@@ -64,22 +61,28 @@
           "group": "inline"
         }
       ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "explorerBookmarks",
+          "name": "Bookmarks",
+          "icon": "bookmark-icon.png"
+        }
+      ]
     }
   },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
-  },
   "devDependencies": {
-    "@types/vscode": "^1.85.0",
     "@types/node": "20.x",
+    "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
+    "@vscode/vsce": "^3.6.2",
     "eslint": "^8.56.0",
     "typescript": "^5.3.3"
-  }
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "icon": "bookmark-icon.png"
 }
