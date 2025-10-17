@@ -8,6 +8,7 @@
     "type": "git",
     "url": "https://github.com/plmrry/vscode-explorer-bookmarks"
   },
+  "icon": "bookmark-icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -20,7 +21,8 @@
       "explorer": [
         {
           "id": "explorerBookmarks",
-          "name": "Bookmarks"
+          "name": "Bookmarks",
+          "icon": "bookmark-icon.png"
         }
       ]
     },
