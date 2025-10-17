@@ -74,8 +74,8 @@ export class BookmarksProvider
     }
   }
 
-  refresh(): void {
-    this.loadBookmarks();
+  async refresh(): Promise<void> {
+    await this.loadBookmarks();
     this._onDidChangeTreeData.fire();
   }
 
@@ -176,16 +176,10 @@ export class BookmarkItem extends vscode.TreeItem {
       arguments: [resourceUri],
     };
 
-    // Use appropriate icon based on file/folder
-    try {
-      const stat = require("fs").statSync(resourceUri.fsPath);
-      if (stat.isDirectory()) {
-        this.iconPath = new vscode.ThemeIcon("folder");
-      } else {
-        this.iconPath = vscode.ThemeIcon.File;
-      }
-    } catch {
-      this.iconPath = new vscode.ThemeIcon("bookmark");
+    if (fs.lstatSync(resourceUri.fsPath).isDirectory()) {
+      this.iconPath = new vscode.ThemeIcon("symbol-folder");
+    } else {
+      this.iconPath = vscode.ThemeIcon.File;
     }
   }
 }
