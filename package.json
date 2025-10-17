@@ -26,17 +26,17 @@
     "commands": [
       {
         "command": "explorerBookmarks.refresh",
-        "title": "Refresh Bookmarks",
+        "title": "Bookmarks: Refresh Bookmarks",
         "icon": "$(refresh)"
       },
       {
         "command": "explorerBookmarks.addBookmark",
-        "title": "Add to Bookmarks",
+        "title": "Bookmarks: Add to Bookmarks",
         "icon": "$(bookmark)"
       },
       {
         "command": "explorerBookmarks.removeBookmark",
-        "title": "Remove from Bookmarks",
+        "title": "Bookmarks: Remove from Bookmarks",
         "icon": "$(trash)"
       }
     ],

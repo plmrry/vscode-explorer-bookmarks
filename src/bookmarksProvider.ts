@@ -32,6 +32,7 @@ export class BookmarksProvider implements vscode.TreeDataProvider<BookmarkItem> 
 	}
 
 	refresh(): void {
+		this.loadBookmarks();
 		this._onDidChangeTreeData.fire();
 	}
 
@@ -124,7 +125,7 @@ export class BookmarkItem extends vscode.TreeItem {
 		// Set command to open the file/folder when clicked
 		this.command = {
 			command: 'explorerBookmarks.openBookmark',
-			title: 'Open Bookmark',
+			title: 'Bookmarks: Open Bookmark',
 			arguments: [resourceUri]
 		};
 
