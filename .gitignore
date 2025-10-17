@@ -5,6 +5,4 @@ node_modules
 *.vsix
 .DS_Store
 .vscode/.bookmarks.json
-
-
-
+bookmark-icon-original.png
