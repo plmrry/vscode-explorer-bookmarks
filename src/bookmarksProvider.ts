@@ -96,7 +96,7 @@ export class BookmarksProvider
   private getBookmarks(): BookmarkItem[] {
     return this.bookmarks.map((bookmarkPath) => {
       const uri = vscode.Uri.file(bookmarkPath);
-      return new BookmarkItem(uri, this.context);
+      return new BookmarkItem(uri);
     });
   }
 
@@ -158,12 +158,34 @@ export class BookmarksProvider
 }
 
 export class BookmarkItem extends vscode.TreeItem {
-  constructor(
-    public readonly resourceUri: vscode.Uri,
-    private context: vscode.ExtensionContext
-  ) {
-    const label = path.basename(resourceUri.fsPath);
-    super(label, vscode.TreeItemCollapsibleState.None);
+  constructor(public readonly resourceUri: vscode.Uri) {
+    const fileName = path.basename(resourceUri.fsPath);
+
+    // Get workspace folder to calculate relative path
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(resourceUri);
+    let pathSegments = "";
+
+    if (workspaceFolder) {
+      const relativePath = path.relative(
+        workspaceFolder.uri.fsPath,
+        resourceUri.fsPath
+      );
+      const parts = relativePath.split(path.sep);
+
+      // Get first two segments (excluding the filename itself)
+      if (parts.length > 1) {
+        const segments = parts.slice(0, Math.min(2, parts.length - 1));
+        pathSegments = segments.join("/");
+      }
+    }
+
+    // Create label with filename
+    super(fileName, vscode.TreeItemCollapsibleState.None);
+
+    // Add description with path segments in gray
+    if (pathSegments) {
+      this.description = pathSegments;
+    }
 
     this.resourceUri = resourceUri;
     this.tooltip = resourceUri.fsPath;
