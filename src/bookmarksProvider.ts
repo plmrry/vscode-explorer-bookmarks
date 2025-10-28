@@ -182,9 +182,12 @@ export class BookmarkItem extends vscode.TreeItem {
       );
       const parts = relativePath.split(path.sep);
 
-      // Get first two segments (excluding the filename itself)
+      // Get last two segments (excluding the filename itself)
       if (parts.length > 1) {
-        const segments = parts.slice(0, Math.min(2, parts.length - 1));
+        const segments = parts.slice(
+          Math.max(0, parts.length - 3),
+          parts.length - 1
+        );
         pathSegments = segments.join("/");
       }
     }
