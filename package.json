@@ -74,15 +74,16 @@
     }
   },
   "devDependencies": {
-    "@types/node": "~20.19.23",
+    "@types/node": "22",
     "@types/vscode": "^1.105.0",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "@vscode/vsce": "^3.6.2",
-    "eslint": "^8.57.1",
-    "typescript": "^5.9.3"
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@vscode/vsce": "latest",
+    "eslint": "latest",
+    "typescript": "latest"
   },
   "engines": {
+    "node": "22.19.0",
     "vscode": "^1.105.0"
   },
   "icon": "bookmark-icon.png"
