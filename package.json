@@ -83,7 +83,7 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.105.0"
   },
   "icon": "bookmark-icon.png"
 }
