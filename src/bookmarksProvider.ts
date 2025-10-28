@@ -104,6 +104,11 @@ export class BookmarksProvider
     const filePath = uri.fsPath;
     if (!this.bookmarks.includes(filePath)) {
       this.bookmarks.push(filePath);
+      this.bookmarks.sort((a, b) => {
+        const nameA = path.basename(a).toLowerCase();
+        const nameB = path.basename(b).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
       await this.saveBookmarks();
     }
   }
@@ -125,6 +130,11 @@ export class BookmarksProvider
         const fileContent = fs.readFileSync(this.bookmarksFilePath, "utf-8");
         const data = JSON.parse(fileContent);
         this.bookmarks = data.bookmarks || [];
+        this.bookmarks.sort((a, b) => {
+          const nameA = path.basename(a).toLowerCase();
+          const nameB = path.basename(b).toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
       } else {
         this.bookmarks = [];
       }
