@@ -39,6 +39,11 @@
         "command": "explorerBookmarks.removeBookmark",
         "title": "Bookmarks: Remove from Bookmarks",
         "icon": "$(trash)"
+      },
+      {
+        "command": "explorerBookmarks.setEmoji",
+        "title": "Bookmarks: Set Emoji",
+        "icon": "$(smiley)"
       }
     ],
     "menus": {
@@ -56,6 +61,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "explorerBookmarks.setEmoji",
+          "when": "view == explorerBookmarks && viewItem == bookmark",
+          "group": "inline"
+        },
         {
           "command": "explorerBookmarks.removeBookmark",
           "when": "view == explorerBookmarks && viewItem == bookmark",
