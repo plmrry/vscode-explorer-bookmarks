@@ -16,6 +16,6 @@ A VSCode extension that lets you Bookmark files and folders in the Explorer.
 This is really just here for my own reference.
 
 ```sh
-pnpm publish minor
+pnpm run publish minor
 
 ```
