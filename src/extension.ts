@@ -95,10 +95,19 @@ class BookmarksProvider implements vscode.TreeDataProvider<BookmarkItem> {
   }
 
   private getBookmarks(): BookmarkItem[] {
-    return this.bookmarks.map((bookmark) => {
-      const uri = vscode.Uri.file(bookmark.path);
-      return new BookmarkItem(uri, bookmark.icon);
-    });
+    return this.bookmarks
+      .filter((bookmark) => {
+        // Silently filter out files/folders that don't exist
+        try {
+          return fs.existsSync(bookmark.path);
+        } catch {
+          return false;
+        }
+      })
+      .map((bookmark) => {
+        const uri = vscode.Uri.file(bookmark.path);
+        return new BookmarkItem(uri, bookmark.icon);
+      });
   }
 
   async addBookmark(uri: vscode.Uri): Promise<void> {
@@ -231,10 +240,15 @@ class BookmarkItem extends vscode.TreeItem {
       this.iconPath = new vscode.ThemeIcon(icon);
     } else {
       // Determine if path is a directory or file
-      const isDirectory = fs.lstatSync(uri.fsPath).isDirectory();
-      this.iconPath = new vscode.ThemeIcon(
-        isDirectory ? "symbol-folder" : "symbol-file"
-      );
+      // Default to file icon if the path doesn't exist
+      try {
+        const isDirectory = fs.lstatSync(uri.fsPath).isDirectory();
+        this.iconPath = new vscode.ThemeIcon(
+          isDirectory ? "symbol-folder" : "symbol-file"
+        );
+      } catch {
+        this.iconPath = new vscode.ThemeIcon("symbol-file");
+      }
     }
   }
 }
