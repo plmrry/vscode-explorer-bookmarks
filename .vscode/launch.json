@@ -1,16 +1,16 @@
 {
-  "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension",
-      "type": "extensionHost",
-      "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "${env:HOME}/Desktop/test-bookmarks"
       ],
+      "name": "Run Extension",
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "${defaultBuildTask}"
+      "preLaunchTask": "build-and-setup",
+      "request": "launch",
+      "type": "extensionHost"
     }
-  ]
+  ],
+  "version": "0.2.0"
 }

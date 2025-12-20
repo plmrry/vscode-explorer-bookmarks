@@ -13,8 +13,21 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "create-test-directory",
+      "type": "shell",
+      "command": "rm -rf ~/Desktop/test-bookmarks && mkdir -p ~/Desktop/test-bookmarks && echo 'Test file 1' > ~/Desktop/test-bookmarks/file1.txt && echo 'Test file 2' > ~/Desktop/test-bookmarks/file2.txt",
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "build-and-setup",
+      "dependsOn": ["create-test-directory", "npm: watch"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
     }
   ]
 }
-
-
