@@ -8,7 +8,7 @@ A VSCode extension that lets you Bookmark files and folders in the Explorer.
 
 - Adds a "Bookmarks" view to the Explorer sidebar
 - Add files and folders to bookmarks
-- Bookmarks are stored in `.vscode/bookmarks.json`
+- Bookmarks are stored in the `explorerBookmarks.bookmarks` VS Code setting
 - Displays bookmarked files and locations
 - Drag and drop to reorder bookmarks
 - Choose VSCode icons for each bookmark

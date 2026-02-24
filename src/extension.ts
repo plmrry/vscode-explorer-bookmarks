@@ -7,6 +7,9 @@ interface BookmarkData {
 	icon?: string;
 }
 
+const CONFIG_SECTION = "explorerBookmarks";
+const BOOKMARKS_SETTING_KEY = "bookmarks";
+
 class BookmarksProvider
 	implements
 		vscode.TreeDataProvider<BookmarkItem>,
@@ -23,67 +26,39 @@ class BookmarksProvider
 	dragMimeTypes = ["application/vnd.code.tree.explorerBookmarks"];
 
 	private bookmarks: BookmarkData[] = [];
-	private bookmarksFilePath: string | null = null;
-	private fileWatcher: vscode.FileSystemWatcher | null = null;
+	private readonly configurationWatcher: vscode.Disposable;
 
 	constructor() {
-		this.initializeBookmarksFile();
 		this.loadBookmarks();
-		this.setupFileWatcher();
+		this.configurationWatcher = vscode.workspace.onDidChangeConfiguration(
+			(event) => {
+				if (
+					event.affectsConfiguration(
+						`${CONFIG_SECTION}.${BOOKMARKS_SETTING_KEY}`,
+					)
+				) {
+					this.refresh();
+				}
+			},
+		);
+		void this.migrateBookmarksFileIfNeeded();
 	}
 
-	private initializeBookmarksFile(): void {
+	private getLegacyBookmarksFilePath(): string | null {
 		const workspaceFolders = vscode.workspace.workspaceFolders;
 		if (workspaceFolders && workspaceFolders.length > 0) {
 			const workspaceRoot = workspaceFolders[0].uri.fsPath;
-			const vscodeDir = path.join(workspaceRoot, ".vscode");
-
-			// Create .vscode directory if it doesn't exist
-			if (!fs.existsSync(vscodeDir)) {
-				fs.mkdirSync(vscodeDir, { recursive: true });
-			}
-
-			this.bookmarksFilePath = path.join(vscodeDir, ".bookmarks.json");
+			return path.join(workspaceRoot, ".vscode", ".bookmarks.json");
 		}
-	}
-
-	private setupFileWatcher(): void {
-		if (!this.bookmarksFilePath) {
-			return;
-		}
-
-		// Create a file system watcher for the bookmarks file
-		this.fileWatcher = vscode.workspace.createFileSystemWatcher(
-			this.bookmarksFilePath,
-		);
-
-		// Watch for changes
-		this.fileWatcher.onDidChange(() => {
-			console.log("Bookmarks file changed:", this.bookmarksFilePath);
-			this.refresh();
-		});
-
-		// Watch for creation
-		this.fileWatcher.onDidCreate(() => {
-			console.log("Bookmarks file created:", this.bookmarksFilePath);
-			this.refresh();
-		});
-
-		// Watch for deletion
-		this.fileWatcher.onDidDelete(() => {
-			console.log("Bookmarks file deleted:", this.bookmarksFilePath);
-			this.refresh();
-		});
+		return null;
 	}
 
 	dispose(): void {
-		if (this.fileWatcher) {
-			this.fileWatcher.dispose();
-		}
+		this.configurationWatcher.dispose();
 	}
 
-	async refresh(): Promise<void> {
-		await this.loadBookmarks();
+	refresh(): void {
+		this.loadBookmarks();
 		this._onDidChangeTreeData.fire();
 	}
 
@@ -122,6 +97,7 @@ class BookmarksProvider
 		if (!this.bookmarks.some((b) => b.path === filePath)) {
 			this.bookmarks.push({ path: filePath });
 			await this.saveBookmarks();
+			this._onDidChangeTreeData.fire();
 		}
 	}
 
@@ -129,6 +105,7 @@ class BookmarksProvider
 		const filePath = item.uri.fsPath;
 		this.bookmarks = this.bookmarks.filter((b) => b.path !== filePath);
 		await this.saveBookmarks();
+		this._onDidChangeTreeData.fire();
 	}
 
 	async setBookmarkIcon(item: BookmarkItem, icon: string): Promise<void> {
@@ -137,24 +114,44 @@ class BookmarksProvider
 		if (bookmark) {
 			bookmark.icon = icon;
 			await this.saveBookmarks();
+			this._onDidChangeTreeData.fire();
 		}
 	}
 
-	private async loadBookmarks(): Promise<void> {
-		if (!this.bookmarksFilePath) {
-			this.bookmarks = [];
-			return;
+	private normalizeBookmarks(value: unknown): BookmarkData[] {
+		if (!Array.isArray(value)) {
+			return [];
 		}
 
-		try {
-			if (fs.existsSync(this.bookmarksFilePath)) {
-				const fileContent = fs.readFileSync(this.bookmarksFilePath, "utf-8");
-				const data = JSON.parse(fileContent);
-
-				this.bookmarks = Array.isArray(data.bookmarks) ? data.bookmarks : [];
-			} else {
-				this.bookmarks = [];
+		const result: BookmarkData[] = [];
+		for (const entry of value) {
+			if (!entry || typeof entry !== "object") {
+				continue;
 			}
+
+			const candidate = entry as { path?: unknown; icon?: unknown };
+			if (typeof candidate.path !== "string" || candidate.path.length === 0) {
+				continue;
+			}
+
+			if (candidate.icon !== undefined && typeof candidate.icon !== "string") {
+				continue;
+			}
+
+			result.push({
+				path: candidate.path,
+				icon: typeof candidate.icon === "string" ? candidate.icon : undefined,
+			});
+		}
+		return result;
+	}
+
+	private loadBookmarks(): void {
+		try {
+			const configuredBookmarks = vscode.workspace
+				.getConfiguration(CONFIG_SECTION)
+				.get<unknown>(BOOKMARKS_SETTING_KEY, []);
+			this.bookmarks = this.normalizeBookmarks(configuredBookmarks);
 		} catch (error) {
 			vscode.window.showErrorMessage(`Failed to load bookmarks: ${error}`);
 			this.bookmarks = [];
@@ -162,24 +159,54 @@ class BookmarksProvider
 	}
 
 	private async saveBookmarks(): Promise<void> {
-		if (!this.bookmarksFilePath) {
-			vscode.window.showWarningMessage(
-				"No workspace folder open. Cannot save bookmarks.",
+		try {
+			const hasWorkspaceFolder =
+				(vscode.workspace.workspaceFolders?.length ?? 0) > 0;
+			const target = hasWorkspaceFolder
+				? vscode.ConfigurationTarget.Workspace
+				: vscode.ConfigurationTarget.Global;
+			await vscode.workspace.getConfiguration(CONFIG_SECTION).update(
+				BOOKMARKS_SETTING_KEY,
+				this.bookmarks,
+				target,
 			);
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to save bookmarks: ${error}`);
+		}
+	}
+
+	private async migrateBookmarksFileIfNeeded(): Promise<void> {
+		const legacyBookmarksFilePath = this.getLegacyBookmarksFilePath();
+		if (!legacyBookmarksFilePath || !fs.existsSync(legacyBookmarksFilePath)) {
+			return;
+		}
+
+		const configuration = vscode.workspace.getConfiguration(CONFIG_SECTION);
+		const inspectedSetting =
+			configuration.inspect<BookmarkData[]>(BOOKMARKS_SETTING_KEY);
+		const hasExistingSetting =
+			inspectedSetting?.workspaceValue !== undefined ||
+			inspectedSetting?.workspaceFolderValue !== undefined ||
+			inspectedSetting?.globalValue !== undefined;
+		if (hasExistingSetting) {
 			return;
 		}
 
 		try {
-			const data = {
-				bookmarks: this.bookmarks,
-			};
-			fs.writeFileSync(
-				this.bookmarksFilePath,
-				JSON.stringify(data, null, 2),
-				"utf-8",
-			);
+			const fileContent = fs.readFileSync(legacyBookmarksFilePath, "utf-8");
+			const data = JSON.parse(fileContent) as { bookmarks?: unknown };
+			const migratedBookmarks = this.normalizeBookmarks(data.bookmarks);
+			if (migratedBookmarks.length === 0) {
+				return;
+			}
+
+			this.bookmarks = migratedBookmarks;
+			await this.saveBookmarks();
+			this._onDidChangeTreeData.fire();
 		} catch (error) {
-			vscode.window.showErrorMessage(`Failed to save bookmarks: ${error}`);
+			vscode.window.showWarningMessage(
+				`Could not migrate legacy bookmarks file: ${error}`,
+			);
 		}
 	}
 
