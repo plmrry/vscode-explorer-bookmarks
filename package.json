@@ -30,7 +30,7 @@
     "prepackage": "npm run compile",
     "package": "vsce package",
     "prepublish": "npm run package",
-    "publish": "vsce publish"
+    "publish": "vsce publish patch"
   },
   "contributes": {
     "commands": [
@@ -137,8 +137,6 @@
   "vsce": {
     "out": "vsix-file",
     "githubBranch": "main",
-    "noGitTagVersion": true,
-    "noUpdatePackageJson": true,
     "noDependencies": true
   }
 }
