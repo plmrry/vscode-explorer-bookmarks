@@ -16,17 +16,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@latest
+        uses: actions/checkout@v6
       
       - name: Setup Node
-        uses: actions/setup-node@latest
+        uses: actions/setup-node@v6
         with:
           node-version: 24
 
       - name: Install
         run: npm install
       
-      - uses: HaaLeo/publish-vscode-extension@latest
+      - uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}         
           registryUrl: https://marketplace.visualstudio.comm
