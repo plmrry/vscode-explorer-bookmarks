@@ -1,7 +1,7 @@
 {
   "name": "vscode-explorer-bookmarks",
   "displayName": "Explorer Bookmarks",
-  "version": "0.5.0",
+  "version": "1.6.0",
   "description": "Add bookmarks to the Explorer panel",
   "categories": [
     "Other"
@@ -13,15 +13,11 @@
   "publisher": "paul-murray",
   "main": "./out/extension.js",
   "scripts": {
+    "biome": "biome check --write --unsafe .",
     "compile": "tsc -p ./",
-    "lint": "biome lint .",
-    "format": "biome format --write .",
-    "check": "biome check .",
-    "check:write": "biome check --write .",
-    "pretest": "pnpm run check && pnpm run compile",
-    "vscode:prepublish": "pnpm run compile",
     "package": "vsce package",
-    "publish": "vsce publish",
+    "publish": "npm run compile &&vsce publish",
+    "pretest": "npm run check && npm run compile",
     "vsce": "vsce"
   },
   "contributes": {
@@ -47,6 +43,34 @@
         "icon": "$(smiley)"
       }
     ],
+    "configuration": {
+      "title": "Explorer Bookmarks",
+      "properties": {
+        "explorerBookmarks.bookmarks": {
+          "type": "array",
+          "scope": "resource",
+          "default": [],
+          "description": "Bookmarks displayed in the Explorer Bookmarks view.",
+          "items": {
+            "type": "object",
+            "required": [
+              "path"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Absolute path to a file or folder."
+              },
+              "icon": {
+                "type": "string",
+                "description": "Optional codicon name for the bookmark icon."
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
     "menus": {
       "view/title": [
         {
@@ -82,34 +106,6 @@
           "icon": "bookmark-icon.png"
         }
       ]
-    },
-    "configuration": {
-      "title": "Explorer Bookmarks",
-      "properties": {
-        "explorerBookmarks.bookmarks": {
-          "type": "array",
-          "scope": "resource",
-          "default": [],
-          "description": "Bookmarks displayed in the Explorer Bookmarks view.",
-          "items": {
-            "type": "object",
-            "required": [
-              "path"
-            ],
-            "properties": {
-              "path": {
-                "type": "string",
-                "description": "Absolute path to a file or folder."
-              },
-              "icon": {
-                "type": "string",
-                "description": "Optional codicon name for the bookmark icon."
-              }
-            },
-            "additionalProperties": false
-          }
-        }
-      }
     }
   },
   "devDependencies": {
@@ -123,5 +119,6 @@
     "node": "24.x",
     "vscode": "^1.107.0"
   },
-  "icon": "bookmark-icon.png"
+  "icon": "bookmark-icon.png",
+  "packageManager": "npm@11.11.0+sha512.f36811c4aae1fde639527368ae44c571d050006a608d67a191f195a801a52637a312d259186254aa3a3799b05335b7390539cf28656d18f0591a1125ba35f973"
 }
