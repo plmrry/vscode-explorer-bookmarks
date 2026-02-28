@@ -110,7 +110,7 @@ class BookmarksProvider
     try {
       const configuredBookmarks = vscode.workspace
         .getConfiguration(CONFIG_SECTION)
-        .get<unknown>(BOOKMARKS_SETTING_KEY, []);
+        .get<BookmarkData[]>(BOOKMARKS_SETTING_KEY, []);
 
       if (!Array.isArray(configuredBookmarks)) {
         this.bookmarks = [];
