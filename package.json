@@ -1,7 +1,7 @@
 {
   "name": "vscode-explorer-bookmarks",
   "displayName": "Explorer Bookmarks",
-  "version": "1.6.0",
+  "version": "2026.2.27",
   "description": "Add bookmarks to the Explorer panel",
   "categories": [
     "Other"
@@ -16,8 +16,7 @@
     "biome": "biome check --write --unsafe .",
     "compile": "tsc -p ./",
     "package": "vsce package",
-    "publish": "npm run compile &&vsce publish",
-    "pretest": "npm run check && npm run compile",
+    "publish": "vsce publish",
     "vsce": "vsce"
   },
   "contributes": {
