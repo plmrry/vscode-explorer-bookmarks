@@ -1,7 +1,7 @@
 {
   "name": "vscode-explorer-bookmarks",
   "displayName": "Explorer Bookmarks",
-  "version": "2026.2.272308",
+  "version": "2026.2.272309",
   "description": "Add bookmarks to the Explorer panel",
   "categories": [
     "Other"
