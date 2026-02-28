@@ -11,13 +11,26 @@
     "url": "https://github.com/plmrry/vscode-explorer-bookmarks"
   },
   "publisher": "paul-murray",
-  "main": "./out/extension.js",
+  "main": "./ts-out/extension.js",
+  "types": "./ts-out/extension.d.ts",
+  "files": [
+    "bookmark-icon.png",
+    "example.png",
+    "LICENSE.md",
+    "package.json",
+    "README.md",
+    "src",
+    "ts-out",
+    "tsconfig.json"
+  ],
   "scripts": {
     "biome": "biome check --write --unsafe .",
-    "compile": "tsc -p ./",
+    "precompile": "npm run biome",
+    "compile": "tsgo --build",
+    "prepackage": "npm run compile",
     "package": "vsce package",
-    "publish": "vsce publish",
-    "vsce": "vsce"
+    "prepublish": "npm run package",
+    "publish": "vsce publish"
   },
   "contributes": {
     "commands": [
@@ -110,14 +123,22 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.4",
     "@types/node": "24",
-    "@types/vscode": "^1.107.0",
-    "@vscode/vsce": "latest",
-    "typescript": "latest"
+    "@types/vscode": "^1.109.5",
+    "@typescript/native-preview": "^7.0.0-dev.20260227.1",
+    "@vscode/vsce": "latest"
   },
+  "packageManager": "npm@11.11.0+sha512.f36811c4aae1fde639527368ae44c571d050006a608d67a191f195a801a52637a312d259186254aa3a3799b05335b7390539cf28656d18f0591a1125ba35f973",
   "engines": {
     "node": "24.x",
-    "vscode": "^1.107.0"
+    "vscode": "^1.109.5"
   },
   "icon": "bookmark-icon.png",
-  "packageManager": "npm@11.11.0+sha512.f36811c4aae1fde639527368ae44c571d050006a608d67a191f195a801a52637a312d259186254aa3a3799b05335b7390539cf28656d18f0591a1125ba35f973"
+  "pricing": "Free",
+  "vsce": {
+    "out": "vsix-file",
+    "githubBranch": "main",
+    "noGitTagVersion": true,
+    "noUpdatePackageJson": true,
+    "noDependencies": true
+  }
 }

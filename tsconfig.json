@@ -1,17 +1,19 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2020",
-    "lib": ["ES2020"],
-    "outDir": "out",
-    "sourceMap": true,
-    "strict": true,
-    "rootDir": "src",
-    "esModuleInterop": true,
+    "declaration": true,
+    "declarationDir": "./ts-out",
+    "declarationMap": true,
+    "isolatedModules": true,
+    "lib": ["esnext"],
+    "module": "nodenext",
+    "outDir": "./ts-out",
+    "rootDir": "./src",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", ".vscode-test"]
+    "sourceMap": false,
+    "strict": false,
+    "target": "esnext",
+    "types": ["node"],
+    "verbatimModuleSyntax": false
+  }
 }

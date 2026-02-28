@@ -136,8 +136,8 @@ class BookmarksProvider
         }
 
         normalizedBookmarks.push({
-          path: candidate.path,
           icon: typeof candidate.icon === "string" ? candidate.icon : undefined,
+          path: candidate.path,
         });
       }
 
@@ -280,9 +280,9 @@ class BookmarkItem extends vscode.TreeItem {
 
     // Set command to open the file/folder when clicked
     this.command = {
+      arguments: [uri],
       command: "explorerBookmarks.openBookmark",
       title: "Bookmarks: Open Bookmark",
-      arguments: [uri],
     };
 
     // Use custom icon if available, otherwise use file/folder icon
@@ -311,9 +311,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Register the tree data provider
   const treeView = vscode.window.createTreeView("explorerBookmarks", {
-    treeDataProvider: bookmarksProvider,
-    showCollapseAll: true,
     dragAndDropController: bookmarksProvider,
+    showCollapseAll: true,
+    treeDataProvider: bookmarksProvider,
   });
 
   // Register commands
@@ -411,10 +411,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         // Create quick pick items
         const quickPickItems = [
-          { label: "$(close) Remove Icon", icon: "" },
+          { icon: "", label: "$(close) Remove Icon" },
           ...icons.map((icon) => ({
-            label: `$(${icon}) ${icon}`,
             icon: icon,
+            label: `$(${icon}) ${icon}`,
           })),
         ];
 
