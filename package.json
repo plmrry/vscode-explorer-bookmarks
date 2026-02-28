@@ -14,11 +14,12 @@
   "main": "./out/extension.js",
   "scripts": {
     "compile": "tsc -p ./",
-    "lint": "eslint src --ext ts",
-    "pretest": "npm run compile && npm run lint",
-    "test": "node ./out/test/runTest.js",
-    "vscode:prepublish": "npm run compile",
-    "watch": "tsc -watch -p ./",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:write": "biome check --write .",
+    "pretest": "pnpm run check && pnpm run compile",
+    "vscode:prepublish": "pnpm run compile",
     "package": "vsce package",
     "publish": "vsce publish",
     "vsce": "vsce"
@@ -112,12 +113,10 @@
     }
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.4",
     "@types/node": "24",
     "@types/vscode": "^1.107.0",
-    "@typescript-eslint/eslint-plugin": "^8.56.1",
-    "@typescript-eslint/parser": "^8.56.1",
     "@vscode/vsce": "latest",
-    "eslint": "latest",
     "typescript": "latest"
   },
   "engines": {
