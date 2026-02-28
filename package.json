@@ -138,5 +138,6 @@
     "out": "vsix-file",
     "githubBranch": "main",
     "noDependencies": true
-  }
+  },
+  "license": "CC0-1.0"
 }
