@@ -25,7 +25,3 @@ jobs:
         run: npm run publish
         env:
           VSCE_PAT: ${{ secrets.VS_MARKETPLACE_TOKEN }}
-        with:
-          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}         
-          registryUrl: https://marketplace.visualstudio.comm
-          packagePath: ./vsix-file
