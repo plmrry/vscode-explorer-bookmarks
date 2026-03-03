@@ -36,11 +36,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: bump extension version [skip ci]"
+          commit_user_name: github-actions[bot]
           file_pattern: package.json
-
-      - name: Push version bump
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh auth setup-git
-          git push origin HEAD:${{ github.ref_name }}
+          branch: ${{ github.ref_name }}
