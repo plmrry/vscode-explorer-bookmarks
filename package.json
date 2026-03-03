@@ -1,7 +1,7 @@
 {
   "name": "vscode-explorer-bookmarks",
   "displayName": "Explorer Bookmarks",
-  "version": "2026.2.272309",
+  "version": "2026.3.3",
   "description": "Add bookmarks to the Explorer panel",
   "categories": [
     "Other"
@@ -55,34 +55,6 @@
         "icon": "$(smiley)"
       }
     ],
-    "configuration": {
-      "title": "Explorer Bookmarks",
-      "properties": {
-        "explorerBookmarks.bookmarks": {
-          "type": "array",
-          "scope": "resource",
-          "default": [],
-          "description": "Bookmarks displayed in the Explorer Bookmarks view.",
-          "items": {
-            "type": "object",
-            "required": [
-              "path"
-            ],
-            "properties": {
-              "path": {
-                "type": "string",
-                "description": "Absolute path to a file or folder."
-              },
-              "icon": {
-                "type": "string",
-                "description": "Optional codicon name for the bookmark icon."
-              }
-            },
-            "additionalProperties": false
-          }
-        }
-      }
-    },
     "menus": {
       "view/title": [
         {
