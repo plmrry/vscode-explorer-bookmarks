@@ -33,16 +33,10 @@ jobs:
           VSCE_PAT: ${{ secrets.VS_MARKETPLACE_TOKEN }}
 
       - name: Commit version bump
-        run: |
-          if git diff --quiet -- package.json; then
-            echo "No package.json change to commit."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json
-          git commit -m "chore: bump extension version [skip ci]"
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: bump extension version [skip ci]"
+          file_pattern: package.json
 
       - name: Push version bump
         env:
