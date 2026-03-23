@@ -1,7 +1,7 @@
 {
   "name": "vscode-explorer-bookmarks",
   "displayName": "Explorer Bookmarks",
-  "version": "2026.3.6",
+  "version": "2026.3.23",
   "description": "Add bookmarks to the Explorer panel",
   "categories": [
     "Other"
@@ -55,6 +55,48 @@
         "icon": "$(smiley)"
       }
     ],
+    "configuration": {
+      "title": "Explorer Bookmarks",
+      "properties": {
+        "explorerBookmarks.storage": {
+          "type": "string",
+          "default": "workspaceFile",
+          "scope": "window",
+          "markdownDescription": "Choose where Explorer Bookmarks stores bookmark data.",
+          "enum": [
+            "workspaceFile",
+            "preferences"
+          ],
+          "enumDescriptions": [
+            "Store bookmarks in `.vscode/bookmarks.json` in the first workspace folder.",
+            "Store bookmarks in workspace preferences under `explorerBookmarks.bookmarks`."
+          ]
+        },
+        "explorerBookmarks.bookmarks": {
+          "type": "array",
+          "default": [],
+          "scope": "window",
+          "markdownDescription": "Bookmarks stored in workspace preferences when `explorerBookmarks.storage` is set to `preferences`.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Absolute path to the bookmarked file or folder."
+              },
+              "icon": {
+                "type": "string",
+                "description": "Optional codicon name for the bookmark."
+              }
+            }
+          }
+        }
+      }
+    },
     "menus": {
       "view/title": [
         {

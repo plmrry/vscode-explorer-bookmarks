@@ -7,9 +7,12 @@ interface BookmarkData {
   icon?: string;
 }
 
+type BookmarkStorage = "workspaceFile" | "preferences";
+
 const BOOKMARKS_FILENAME = "bookmarks.json";
-const LEGACY_CONFIG_SECTION = "explorerBookmarks";
-const LEGACY_BOOKMARKS_SETTING_KEY = "bookmarks";
+const CONFIG_SECTION = "explorerBookmarks";
+const BOOKMARKS_SETTING_KEY = "bookmarks";
+const STORAGE_SETTING_KEY = "storage";
 
 class BookmarksProvider
   implements
@@ -28,8 +31,10 @@ class BookmarksProvider
 
   private bookmarks: BookmarkData[] = [];
   private bookmarksFilePath: string | null = null;
+  private storage: BookmarkStorage = "workspaceFile";
 
   constructor() {
+    this.storage = this.getStorage();
     this.bookmarksFilePath = this.getBookmarksFilePath();
     this.loadBookmarks();
   }
@@ -39,6 +44,32 @@ class BookmarksProvider
   refresh(): void {
     this.loadBookmarks();
     this._onDidChangeTreeData.fire();
+  }
+
+  async handleConfigurationChange(
+    event: vscode.ConfigurationChangeEvent,
+  ): Promise<void> {
+    const storageSetting = this.getConfigurationKey(STORAGE_SETTING_KEY);
+    const bookmarksSetting = this.getConfigurationKey(BOOKMARKS_SETTING_KEY);
+
+    if (event.affectsConfiguration(storageSetting)) {
+      const nextStorage = this.getStorage();
+      if (nextStorage !== this.storage) {
+        await this.writeBookmarks(nextStorage, this.bookmarks);
+        this.storage = nextStorage;
+        this.loadBookmarks();
+        this._onDidChangeTreeData.fire();
+        return;
+      }
+    }
+
+    if (
+      event.affectsConfiguration(bookmarksSetting) &&
+      this.getStorage() === "preferences"
+    ) {
+      this.loadBookmarks();
+      this._onDidChangeTreeData.fire();
+    }
   }
 
   getTreeItem(element: BookmarkItem): vscode.TreeItem {
@@ -134,56 +165,146 @@ class BookmarksProvider
     return normalizedBookmarks;
   }
 
-  private loadBookmarksFromLegacySetting(): BookmarkData[] {
+  private getStorage(): BookmarkStorage {
+    const configuredStorage = vscode.workspace
+      .getConfiguration(CONFIG_SECTION)
+      .get<unknown>(STORAGE_SETTING_KEY, "workspaceFile");
+
+    return configuredStorage === "preferences"
+      ? "preferences"
+      : "workspaceFile";
+  }
+
+  private getConfigurationKey(setting: string): string {
+    return `${CONFIG_SECTION}.${setting}`;
+  }
+
+  private isStorageConfigured(): boolean {
+    const storageInspection = vscode.workspace
+      .getConfiguration(CONFIG_SECTION)
+      .inspect<BookmarkStorage>(STORAGE_SETTING_KEY);
+
+    return Boolean(
+      storageInspection?.globalValue !== undefined ||
+        storageInspection?.workspaceValue !== undefined ||
+        storageInspection?.workspaceFolderValue !== undefined ||
+        storageInspection?.globalLanguageValue !== undefined ||
+        storageInspection?.workspaceLanguageValue !== undefined ||
+        storageInspection?.workspaceFolderLanguageValue !== undefined,
+    );
+  }
+
+  private hasWorkspaceContext(): boolean {
+    return Boolean(
+      vscode.workspace.workspaceFile ||
+        (vscode.workspace.workspaceFolders?.length ?? 0) > 0,
+    );
+  }
+
+  private loadBookmarksFromPreferences(): BookmarkData[] {
     try {
       const configuredBookmarks = vscode.workspace
-        .getConfiguration(LEGACY_CONFIG_SECTION)
-        .get<unknown>(LEGACY_BOOKMARKS_SETTING_KEY, []);
+        .getConfiguration(CONFIG_SECTION)
+        .get<unknown>(BOOKMARKS_SETTING_KEY, []);
       return this.normalizeBookmarks(configuredBookmarks);
     } catch {
       return [];
     }
   }
 
-  private loadBookmarks(): void {
-    this.bookmarksFilePath = this.getBookmarksFilePath();
-    if (!this.bookmarksFilePath) {
-      this.bookmarks = [];
-      return;
-    }
-
+  private loadBookmarksFromWorkspaceFile(): BookmarkData[] {
     try {
+      if (!this.bookmarksFilePath) {
+        return [];
+      }
+
       if (!fs.existsSync(this.bookmarksFilePath)) {
-        const migratedBookmarks = this.loadBookmarksFromLegacySetting();
-        this.bookmarks = migratedBookmarks;
-        if (migratedBookmarks.length > 0) {
-          void this.saveBookmarks();
+        if (!this.isStorageConfigured()) {
+          const migratedBookmarks = this.loadBookmarksFromPreferences();
+          if (migratedBookmarks.length > 0) {
+            void this.saveBookmarksToWorkspaceFile(migratedBookmarks);
+          }
+
+          return migratedBookmarks;
         }
-        return;
+
+        return [];
       }
 
       const fileContent = fs.readFileSync(this.bookmarksFilePath, "utf-8");
       const parsed = JSON.parse(fileContent) as unknown;
 
       if (Array.isArray(parsed)) {
-        this.bookmarks = this.normalizeBookmarks(parsed);
-        return;
+        return this.normalizeBookmarks(parsed);
       }
 
       if (parsed && typeof parsed === "object") {
         const bookmarks = (parsed as { bookmarks?: unknown }).bookmarks;
-        this.bookmarks = this.normalizeBookmarks(bookmarks);
-        return;
+        return this.normalizeBookmarks(bookmarks);
       }
 
-      this.bookmarks = [];
+      return [];
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to load bookmarks: ${error}`);
-      this.bookmarks = [];
+      return [];
     }
   }
 
+  private loadBookmarks(): void {
+    this.storage = this.getStorage();
+    this.bookmarksFilePath = this.getBookmarksFilePath();
+
+    if (this.storage === "preferences") {
+      this.bookmarks = this.loadBookmarksFromPreferences();
+      return;
+    }
+
+    this.bookmarks = this.loadBookmarksFromWorkspaceFile();
+  }
+
   private async saveBookmarks(): Promise<void> {
+    this.storage = this.getStorage();
+    await this.writeBookmarks(this.storage, this.bookmarks);
+  }
+
+  private async writeBookmarks(
+    storage: BookmarkStorage,
+    bookmarks: BookmarkData[],
+  ): Promise<void> {
+    if (storage === "preferences") {
+      await this.saveBookmarksToPreferences(bookmarks);
+      return;
+    }
+
+    await this.saveBookmarksToWorkspaceFile(bookmarks);
+  }
+
+  private async saveBookmarksToPreferences(
+    bookmarks: BookmarkData[],
+  ): Promise<void> {
+    if (!this.hasWorkspaceContext()) {
+      vscode.window.showWarningMessage(
+        "No workspace open. Cannot save bookmarks to workspace preferences.",
+      );
+      return;
+    }
+
+    try {
+      await vscode.workspace
+        .getConfiguration(CONFIG_SECTION)
+        .update(
+          BOOKMARKS_SETTING_KEY,
+          bookmarks,
+          vscode.ConfigurationTarget.Workspace,
+        );
+    } catch (error) {
+      vscode.window.showErrorMessage(`Failed to save bookmarks: ${error}`);
+    }
+  }
+
+  private async saveBookmarksToWorkspaceFile(
+    bookmarks: BookmarkData[],
+  ): Promise<void> {
     this.bookmarksFilePath = this.getBookmarksFilePath();
     if (!this.bookmarksFilePath) {
       vscode.window.showWarningMessage(
@@ -198,7 +319,7 @@ class BookmarksProvider
 
       fs.writeFileSync(
         this.bookmarksFilePath,
-        JSON.stringify({ bookmarks: this.bookmarks }, null, 2),
+        JSON.stringify({ bookmarks }, null, 2),
         "utf-8",
       );
     } catch (error) {
@@ -360,6 +481,12 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // Register commands
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      void bookmarksProvider.handleConfigurationChange(event);
+    }),
+  );
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "explorerBookmarks.refresh",
