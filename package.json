@@ -138,7 +138,7 @@
     "@biomejs/biome": "2.4.4",
     "@types/node": "24",
     "@types/vscode": "^1.109",
-    "@typescript/native-preview": "^7.0.0-dev.20260227.1",
+    "@typescript/native-preview": "^7.0.0-dev.20260324.1",
     "@vscode/vsce": "latest"
   },
   "packageManager": "npm@11.11.0+sha512.f36811c4aae1fde639527368ae44c571d050006a608d67a191f195a801a52637a312d259186254aa3a3799b05335b7390539cf28656d18f0591a1125ba35f973",
